@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="title desc">
+  <title id="title">Meal preview</title>
+  <desc id="desc">Stylized plate image used as recipe preview.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1f4f7c" />
+      <stop offset="100%" stop-color="#2f7d5c" />
+    </linearGradient>
+    <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#e9f0f6" />
+    </linearGradient>
+  </defs>
+
+  <rect width="900" height="600" fill="url(#bg)" />
+  <circle cx="450" cy="320" r="190" fill="url(#plate)" />
+  <circle cx="450" cy="320" r="130" fill="#f8fcff" />
+  <circle cx="410" cy="295" r="24" fill="#ff8c5a" />
+  <circle cx="485" cy="355" r="22" fill="#f8bd56" />
+  <circle cx="500" cy="275" r="20" fill="#64b67a" />
+  <circle cx="390" cy="360" r="18" fill="#62a8de" />
+  <rect x="615" y="196" width="20" height="245" rx="10" fill="#f0f6fb" />
+  <rect x="665" y="196" width="20" height="245" rx="10" fill="#f0f6fb" />
+  <path d="M625 176 Q650 146 675 176" fill="none" stroke="#f0f6fb" stroke-width="16" />
+  <text x="450" y="98" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="46" font-weight="700">
+    WhatToEat Recipe
+  </text>
+  <text x="450" y="536" text-anchor="middle" fill="#e8f4ff" font-family="Segoe UI, Arial, sans-serif" font-size="28">
+    Seasonal, balanced, and family-aware meal planning
+  </text>
+</svg>
