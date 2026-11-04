@@ -2,6 +2,8 @@
 
 WTE is a static web app that helps users plan lunch and dinner for the next shopping cycle, generate a smart grocery list, and learn from meal ratings over time.
 
+Live URL: https://pala991.github.io/WTE/
+
 The app is designed to be deployed on **GitHub Pages** and supports:
 
 - user authentication (email/password, Google, Apple) through Firebase Auth
