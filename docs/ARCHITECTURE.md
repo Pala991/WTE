@@ -22,7 +22,7 @@ The app has two runtime modes:
   Meal slot generation from the meal-template settings, recipe scoring, swap logic, strict no-repeat enforcement, shopping-list aggregation, budget estimation.
 
 - `js/recipes.js`  
-  Curated recipe dataset (metadata, ingredients, steps, allergies, tags).
+  Core curated recipes plus an auto-generated expanded catalog (200+) with consistent metadata, ingredients, steps, allergies, and tags.
 
 - `js/content-localization.js`  
   Recipe-name, ingredient-name and seasonality-note localization for user-facing meal content.

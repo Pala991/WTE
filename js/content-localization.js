@@ -118,6 +118,19 @@ const NOTE_TRANSLATIONS = {
   }
 };
 
+const RECIPE_FRAGMENT_TRANSLATIONS = {
+  it: {
+    Traybake: "Teglia",
+    Skillet: "Padellata",
+    Baked: "Al forno",
+    Bowl: "Bowl",
+    Stew: "Stufato",
+    Pilaf: "Pilaf",
+    " with ": " con ",
+    " and ": " e "
+  }
+};
+
 function localizeFromDictionary(dictionary, language, key, fallback) {
   if (!key) {
     return fallback;
@@ -127,13 +140,54 @@ function localizeFromDictionary(dictionary, language, key, fallback) {
   return localizedValue ?? fallback;
 }
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function replaceWithDictionary(text, dictionary) {
+  let next = text;
+  const entries = Object.entries(dictionary).sort(
+    (left, right) => right[0].length - left[0].length
+  );
+
+  for (const [source, replacement] of entries) {
+    next = next.replace(new RegExp(escapeRegExp(source), "g"), replacement);
+  }
+
+  return next;
+}
+
+function localizeGeneratedRecipeName(fallbackName, language) {
+  if (typeof fallbackName !== "string" || language !== "it") {
+    return fallbackName;
+  }
+
+  let localized = fallbackName;
+  localized = replaceWithDictionary(
+    localized,
+    RECIPE_FRAGMENT_TRANSLATIONS.it
+  );
+  localized = replaceWithDictionary(
+    localized,
+    INGREDIENT_NAME_TRANSLATIONS.it
+  );
+
+  return localized;
+}
+
 export function localizeRecipeName(recipeId, fallbackName, language) {
-  return localizeFromDictionary(
+  const localizedName = localizeFromDictionary(
     RECIPE_NAME_TRANSLATIONS,
     language,
     recipeId,
     fallbackName
   );
+
+  if (localizedName !== fallbackName) {
+    return localizedName;
+  }
+
+  return localizeGeneratedRecipeName(fallbackName, language);
 }
 
 export function localizeIngredientName(name, language) {

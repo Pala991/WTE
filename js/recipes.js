@@ -1,6 +1,6 @@
 const image = () => "./assets/recipe-placeholder.svg";
 
-export const RECIPES = [
+const CORE_RECIPES = [
   {
     id: "italian-chickpea-pasta",
     name: "Chickpea Pasta with Rosemary",
@@ -542,3 +542,487 @@ export const RECIPES = [
     ]
   }
 ];
+
+const AUTO_RECIPES_PER_CUISINE = 36;
+const CUISINES = [
+  "italian",
+  "mediterranean",
+  "asian",
+  "mexican",
+  "middle-eastern",
+  "comfort"
+];
+
+const PROTEIN_SOURCES = [
+  {
+    id: "chickpeas",
+    name: "Chickpeas",
+    quantity: 220,
+    unit: "g",
+    nutritionFocus: "legumes",
+    isVegetarian: true,
+    isHighProtein: true,
+    allergens: []
+  },
+  {
+    id: "lentils",
+    name: "Cooked lentils",
+    quantity: 230,
+    unit: "g",
+    nutritionFocus: "legumes",
+    isVegetarian: true,
+    isHighProtein: true,
+    allergens: []
+  },
+  {
+    id: "cannellini",
+    name: "Cannellini beans",
+    quantity: 240,
+    unit: "g",
+    nutritionFocus: "legumes",
+    isVegetarian: true,
+    isHighProtein: true,
+    allergens: []
+  },
+  {
+    id: "tofu",
+    name: "Firm tofu",
+    quantity: 280,
+    unit: "g",
+    nutritionFocus: "legumes",
+    isVegetarian: true,
+    isHighProtein: true,
+    allergens: ["soy"]
+  },
+  {
+    id: "eggs",
+    name: "Egg",
+    quantity: 4,
+    unit: "pc",
+    nutritionFocus: "eggs",
+    isVegetarian: true,
+    isHighProtein: true,
+    allergens: ["eggs"]
+  },
+  {
+    id: "chicken",
+    name: "Chicken breast",
+    quantity: 320,
+    unit: "g",
+    nutritionFocus: "meat",
+    isVegetarian: false,
+    isHighProtein: true,
+    allergens: []
+  },
+  {
+    id: "turkey",
+    name: "Ground turkey",
+    quantity: 300,
+    unit: "g",
+    nutritionFocus: "meat",
+    isVegetarian: false,
+    isHighProtein: true,
+    allergens: []
+  },
+  {
+    id: "beef",
+    name: "Beef strips",
+    quantity: 300,
+    unit: "g",
+    nutritionFocus: "meat",
+    isVegetarian: false,
+    isHighProtein: true,
+    allergens: []
+  },
+  {
+    id: "salmon",
+    name: "Salmon fillet",
+    quantity: 320,
+    unit: "g",
+    nutritionFocus: "fish",
+    isVegetarian: false,
+    isHighProtein: true,
+    allergens: ["fish"]
+  },
+  {
+    id: "cod",
+    name: "Cod fillet",
+    quantity: 320,
+    unit: "g",
+    nutritionFocus: "fish",
+    isVegetarian: false,
+    isHighProtein: true,
+    allergens: ["fish"]
+  },
+  {
+    id: "tuna",
+    name: "Tuna in olive oil",
+    quantity: 170,
+    unit: "g",
+    nutritionFocus: "fish",
+    isVegetarian: false,
+    isHighProtein: true,
+    allergens: ["fish"]
+  },
+  {
+    id: "shrimp",
+    name: "Shrimp",
+    quantity: 280,
+    unit: "g",
+    nutritionFocus: "fish",
+    isVegetarian: false,
+    isHighProtein: true,
+    allergens: ["shellfish"]
+  }
+];
+
+const CARB_BASES = [
+  {
+    id: "rice",
+    name: "Rice",
+    quantity: 170,
+    unit: "g",
+    nutritionFocus: "carbs",
+    allergens: []
+  },
+  {
+    id: "brown-rice",
+    name: "Brown rice",
+    quantity: 175,
+    unit: "g",
+    nutritionFocus: "whole-grains",
+    allergens: []
+  },
+  {
+    id: "quinoa",
+    name: "Quinoa",
+    quantity: 170,
+    unit: "g",
+    nutritionFocus: "whole-grains",
+    allergens: []
+  },
+  {
+    id: "farro",
+    name: "Farro",
+    quantity: 180,
+    unit: "g",
+    nutritionFocus: "whole-grains",
+    allergens: ["gluten"]
+  },
+  {
+    id: "barley",
+    name: "Pearl barley",
+    quantity: 170,
+    unit: "g",
+    nutritionFocus: "whole-grains",
+    allergens: ["gluten"]
+  },
+  {
+    id: "couscous",
+    name: "Whole couscous",
+    quantity: 180,
+    unit: "g",
+    nutritionFocus: "carbs",
+    allergens: ["gluten"]
+  },
+  {
+    id: "orzo",
+    name: "Orzo pasta",
+    quantity: 180,
+    unit: "g",
+    nutritionFocus: "carbs",
+    allergens: ["gluten"]
+  },
+  {
+    id: "whole-wheat-pasta",
+    name: "Whole wheat pasta",
+    quantity: 180,
+    unit: "g",
+    nutritionFocus: "carbs",
+    allergens: ["gluten"]
+  },
+  {
+    id: "gnocchi",
+    name: "Potato gnocchi",
+    quantity: 420,
+    unit: "g",
+    nutritionFocus: "carbs",
+    allergens: ["gluten"]
+  },
+  {
+    id: "arborio",
+    name: "Arborio rice",
+    quantity: 180,
+    unit: "g",
+    nutritionFocus: "carbs",
+    allergens: []
+  },
+  {
+    id: "bread",
+    name: "Whole grain bread",
+    quantity: 4,
+    unit: "slice",
+    nutritionFocus: "carbs",
+    allergens: ["gluten"]
+  }
+];
+
+const VEGETABLE_SIDES = [
+  { id: "tomato", name: "Tomato", quantity: 240, unit: "g", seasonalKey: "tomato" },
+  { id: "zucchini", name: "Zucchini", quantity: 240, unit: "g", seasonalKey: "zucchini" },
+  { id: "eggplant", name: "Eggplant", quantity: 240, unit: "g", seasonalKey: "eggplant" },
+  { id: "peas", name: "Peas", quantity: 220, unit: "g", seasonalKey: "peas" },
+  { id: "broccoli", name: "Broccoli", quantity: 220, unit: "g" },
+  { id: "bell-pepper", name: "Bell pepper", quantity: 220, unit: "g" },
+  { id: "spinach", name: "Spinach", quantity: 220, unit: "g", seasonalKey: "spinach" },
+  { id: "pumpkin", name: "Pumpkin", quantity: 260, unit: "g", seasonalKey: "pumpkin" },
+  { id: "mushrooms", name: "Mushrooms", quantity: 240, unit: "g" },
+  { id: "cucumber", name: "Cucumber", quantity: 180, unit: "g" },
+  { id: "asparagus", name: "Asparagus", quantity: 220, unit: "g", seasonalKey: "asparagus" },
+  { id: "corn", name: "Corn", quantity: 180, unit: "g" }
+];
+
+const SAUCE_OPTIONS = [
+  {
+    id: "lemon-herb",
+    title: "Lemon Herb Sauce",
+    ingredient: { name: "Lemon", quantity: 1, unit: "pc" },
+    optionalIngredient: { name: "Parsley", quantity: 1, unit: "tbsp" },
+    allergens: []
+  },
+  {
+    id: "tomato",
+    title: "Tomato Sauce",
+    ingredient: { name: "Tomato passata", quantity: 220, unit: "ml" },
+    optionalIngredient: { name: "Garlic", quantity: 1, unit: "pc" },
+    allergens: []
+  },
+  {
+    id: "soy-glaze",
+    title: "Soy Glaze",
+    ingredient: { name: "Soy sauce", quantity: 2, unit: "tbsp" },
+    optionalIngredient: { name: "Honey", quantity: 1, unit: "tbsp" },
+    allergens: ["soy"]
+  },
+  {
+    id: "yogurt-herb",
+    title: "Yogurt Herb Sauce",
+    ingredient: { name: "Greek yogurt", quantity: 120, unit: "g" },
+    optionalIngredient: { name: "Mint", quantity: 1, unit: "tbsp" },
+    allergens: ["lactose"]
+  },
+  {
+    id: "tahini",
+    title: "Tahini Sauce",
+    ingredient: { name: "Tahini", quantity: 1, unit: "tbsp" },
+    optionalIngredient: { name: "Lemon", quantity: 1, unit: "pc" },
+    allergens: []
+  },
+  {
+    id: "caper-olive",
+    title: "Caper Olive Dressing",
+    ingredient: { name: "Capers", quantity: 1, unit: "tbsp" },
+    optionalIngredient: { name: "Black olives", quantity: 60, unit: "g" },
+    allergens: []
+  }
+];
+
+const STYLE_TEMPLATES = [
+  {
+    id: "skillet",
+    label: "Skillet",
+    basePrepMinutes: 26,
+    baseCost: 7,
+    steps: [
+      "Cook {carb} until almost ready.",
+      "Saute {protein} with onion and olive oil.",
+      "Add {vegetable} and finish with {sauce}.",
+      "Combine everything and serve warm."
+    ]
+  },
+  {
+    id: "baked",
+    label: "Baked",
+    basePrepMinutes: 34,
+    baseCost: 8,
+    steps: [
+      "Preheat the oven and arrange {protein} and {vegetable} on a tray.",
+      "Season with olive oil and half of the {sauce}.",
+      "Bake until the protein is cooked through.",
+      "Serve with freshly cooked {carb}."
+    ]
+  },
+  {
+    id: "bowl",
+    label: "Bowl",
+    basePrepMinutes: 24,
+    baseCost: 7,
+    steps: [
+      "Cook {carb} and let it cool slightly.",
+      "Prepare {protein} in a pan with olive oil.",
+      "Mix with {vegetable} and finish with {sauce}.",
+      "Serve as a warm bowl."
+    ]
+  },
+  {
+    id: "stew",
+    label: "Stew",
+    basePrepMinutes: 40,
+    baseCost: 8,
+    steps: [
+      "Saute onion and garlic in olive oil.",
+      "Add {protein}, {vegetable} and {sauce}.",
+      "Simmer gently until flavors are blended.",
+      "Serve the stew with {carb}."
+    ]
+  },
+  {
+    id: "tray",
+    label: "Traybake",
+    basePrepMinutes: 30,
+    baseCost: 8,
+    steps: [
+      "Arrange {protein}, {vegetable} and onion in a baking tray.",
+      "Drizzle olive oil and season with {sauce}.",
+      "Roast until caramelized and tender.",
+      "Plate with {carb}."
+    ]
+  },
+  {
+    id: "pilaf",
+    label: "Pilaf",
+    basePrepMinutes: 36,
+    baseCost: 8,
+    steps: [
+      "Saute onion and {protein} in olive oil.",
+      "Add {carb}, then toast for 1 minute.",
+      "Add {vegetable} and cook until tender.",
+      "Finish with {sauce} and rest before serving."
+    ]
+  }
+];
+
+function unique(values) {
+  return [...new Set(values)];
+}
+
+function formatStep(template, replacements) {
+  return template.replace(/\{(\w+)\}/g, (fullMatch, key) => {
+    if (!Object.hasOwn(replacements, key)) {
+      return fullMatch;
+    }
+    return replacements[key];
+  });
+}
+
+function buildDietTags(protein, prepMinutes) {
+  const tags = new Set(["balanced"]);
+
+  if (protein.isVegetarian) {
+    tags.add("vegetarian");
+  }
+
+  if (
+    protein.isHighProtein ||
+    ["fish", "meat", "eggs", "legumes"].includes(protein.nutritionFocus)
+  ) {
+    tags.add("high-protein");
+  }
+
+  if (prepMinutes <= 35 || protein.isVegetarian) {
+    tags.add("light");
+  }
+
+  return [...tags];
+}
+
+function buildMealMoments(index) {
+  if (index % 11 === 0) {
+    return ["lunch"];
+  }
+  if (index % 7 === 0) {
+    return ["dinner"];
+  }
+  return ["lunch", "dinner"];
+}
+
+function buildAutoRecipe(cuisine, cuisineIndex, index) {
+  const protein = PROTEIN_SOURCES[(index + cuisineIndex * 2) % PROTEIN_SOURCES.length];
+  const carb = CARB_BASES[(index * 2 + cuisineIndex) % CARB_BASES.length];
+  const vegetable =
+    VEGETABLE_SIDES[(index * 3 + cuisineIndex) % VEGETABLE_SIDES.length];
+  const sauce = SAUCE_OPTIONS[(index + cuisineIndex * 4) % SAUCE_OPTIONS.length];
+  const style = STYLE_TEMPLATES[(index + cuisineIndex) % STYLE_TEMPLATES.length];
+
+  const difficultyCycle = ["easy", "medium", "hard"];
+  const difficulty = difficultyCycle[(index + cuisineIndex) % difficultyCycle.length];
+  const prepBoost = difficulty === "easy" ? 0 : difficulty === "medium" ? 8 : 16;
+  const prepMinutes = style.basePrepMinutes + prepBoost;
+
+  const nutritionFocus =
+    protein.nutritionFocus === "legumes" && index % 5 === 0
+      ? carb.nutritionFocus
+      : protein.nutritionFocus;
+
+  const baseIngredients = [
+    { name: protein.name, quantity: protein.quantity, unit: protein.unit },
+    { name: carb.name, quantity: carb.quantity, unit: carb.unit },
+    {
+      name: vegetable.name,
+      quantity: vegetable.quantity,
+      unit: vegetable.unit,
+      seasonalKey: vegetable.seasonalKey ?? null
+    },
+    { name: "Onion", quantity: 1, unit: "pc" },
+    { name: "Extra virgin olive oil", quantity: 2, unit: "tbsp" },
+    { ...sauce.ingredient },
+    sauce.optionalIngredient ? { ...sauce.optionalIngredient } : null
+  ].filter(Boolean);
+
+  const replacements = {
+    protein: protein.name.toLowerCase(),
+    carb: carb.name.toLowerCase(),
+    vegetable: vegetable.name.toLowerCase(),
+    sauce: sauce.title.toLowerCase()
+  };
+
+  const steps = style.steps.map((step) => formatStep(step, replacements));
+  const estimatedCost = style.baseCost + (protein.isHighProtein ? 3 : 1);
+
+  const allergens = unique([
+    ...protein.allergens,
+    ...carb.allergens,
+    ...sauce.allergens
+  ]);
+
+  return {
+    id: `auto-${cuisine}-${style.id}-${protein.id}-${carb.id}-${vegetable.id}-${index + 1}`,
+    name: `${style.label} ${protein.name} with ${carb.name} and ${vegetable.name}`,
+    cuisine,
+    mealMoments: buildMealMoments(index),
+    difficulty,
+    prepMinutes,
+    baseServings: 2,
+    estimatedCost,
+    nutritionFocus,
+    dietTags: buildDietTags(protein, prepMinutes),
+    allergens,
+    imageUrl: image(),
+    ingredients: baseIngredients,
+    steps
+  };
+}
+
+function buildAutoRecipes() {
+  const recipes = [];
+  for (const [cuisineIndex, cuisine] of CUISINES.entries()) {
+    for (let index = 0; index < AUTO_RECIPES_PER_CUISINE; index += 1) {
+      recipes.push(buildAutoRecipe(cuisine, cuisineIndex, index));
+    }
+  }
+  return recipes;
+}
+
+const AUTO_RECIPES = buildAutoRecipes();
+
+export const RECIPES = [...CORE_RECIPES, ...AUTO_RECIPES];

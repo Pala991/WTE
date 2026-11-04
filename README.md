@@ -17,6 +17,7 @@ The app is designed to be deployed on **GitHub Pages** and supports:
 - one-click full cycle regeneration (“I need to shop again”)
 - meal swaps with automatic grocery-list updates
 - seasonal ingredient adaptations (for example, preserved tomato products in winter)
+- 200+ recipes available for generation
 
 > If Firebase is not configured yet, the app runs in **local demo mode** (stored in localStorage).  
 > In demo mode, Google/Apple buttons use a demo sign-in flow so you can test the full UX without cloud setup.
@@ -122,6 +123,7 @@ Detailed instructions: [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
   - slots generated from the configured per-day meal template
   - scored recipe selection using preferences and past ratings
   - no recipe repeats inside the same generated cycle
+  - large catalog (200+) to reduce repetition across short/medium cycles
   - seasonal substitutions and warnings
   - child-specific warnings with alternatives
 - **Meal cards**
