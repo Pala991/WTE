@@ -3,6 +3,11 @@ const TRANSLATIONS = {
     "app.title": "WhatToEat? (WTE)",
     "app.subtitle":
       "Plan lunch and dinner, stay on budget, and update your shopping list automatically.",
+    "nav.toggle": "Open app menu",
+    "nav.home": "Home",
+    "nav.shopping": "Shopping",
+    "nav.settings": "Settings",
+    "nav.history": "History",
     "auth.title": "Sign in to your account",
     "auth.label.email": "Email",
     "auth.label.password": "Password",
@@ -14,7 +19,7 @@ const TRANSLATIONS = {
     "auth.mode.firebase":
       "Firebase authentication is active. Email, Google and Apple sign-in are enabled.",
     "auth.mode.demo":
-      "Firebase is not configured. Running in local demo mode (email/password only).",
+      "Firebase is not configured. Running in local demo mode. Google and Apple buttons use demo sign-in.",
     "auth.validation.emailPasswordRequired": "Email and password are required.",
     "auth.validation.passwordMin":
       "Password must contain at least 6 characters.",
@@ -35,8 +40,17 @@ const TRANSLATIONS = {
     "settings.placeholder.childrenAges": "4, 8",
     "settings.legend.cuisines": "Preferred cuisines",
     "settings.legend.allergies": "Allergies / intolerances",
+    "settings.legend.mealTemplate": "Meals per day",
+    "settings.schedule.hint":
+      "Select lunch and/or dinner for each day of the shopping cycle.",
+    "settings.schedule.header.day": "Cycle day",
+    "settings.schedule.header.lunch": "Lunch",
+    "settings.schedule.header.dinner": "Dinner",
+    "settings.schedule.dayLabel": "Day {index} ({day})",
+    "settings.schedule.toggleLabel": "{meal} on {day}",
     "settings.button.save": "Save settings",
     "settings.button.generate": "Generate plan",
+    "settings.button.regenerate": "I need to shop again",
     "preview.title": "Upcoming meal preview",
     "preview.cycleHint":
       "Cycle: {start} to {end} • Next shopping day: {next}",
@@ -70,6 +84,8 @@ const TRANSLATIONS = {
     "noscript.message": "JavaScript is required to run this application.",
     "status.planGenerated":
       "A new meal plan was generated. Shopping list and history were updated.",
+    "status.planRegenerated":
+      "Shopping cycle regenerated. Meal plan and shopping list were fully refreshed.",
     "status.settingsSaved": "Settings saved.",
     "status.mealSwapped": "Recipe changed. Shopping list updated.",
     "status.ratingSaved":
@@ -95,6 +111,9 @@ const TRANSLATIONS = {
     "error.auth.signOut": "Could not sign out.",
     "error.auth.accountExists": "An account with this email already exists.",
     "error.auth.wrongCredentials": "Wrong credentials.",
+    "error.auth.providerCancelled": "Social sign-in cancelled.",
+    "error.auth.providerInvalidEmail":
+      "Please enter a valid email address for social sign-in.",
     "error.auth.googleRequiresFirebase":
       "Google sign-in is available only when Firebase is configured.",
     "error.auth.appleRequiresFirebase":
@@ -119,6 +138,8 @@ const TRANSLATIONS = {
       "The selected meal was not found in the current plan.",
     "planner.error.noAlternative":
       "No alternative recipe is available with the current preferences. Relax filters and try again.",
+    "planner.error.notEnoughUniqueMeals":
+      "Not enough unique recipes are available for this cycle with current settings. Relax filters or reduce selected meals.",
     "option.weekday.0": "Sunday",
     "option.weekday.1": "Monday",
     "option.weekday.2": "Tuesday",
@@ -160,6 +181,11 @@ const TRANSLATIONS = {
     "app.title": "WhatToEat? (WTE)",
     "app.subtitle":
       "Pianifica pranzo e cena, resta nel budget e aggiorna automaticamente la lista della spesa.",
+    "nav.toggle": "Apri il menu dell'app",
+    "nav.home": "Home",
+    "nav.shopping": "Spesa",
+    "nav.settings": "Impostazioni",
+    "nav.history": "Storico",
     "auth.title": "Accedi al tuo account",
     "auth.label.email": "Email",
     "auth.label.password": "Password",
@@ -171,7 +197,7 @@ const TRANSLATIONS = {
     "auth.mode.firebase":
       "Autenticazione Firebase attiva. Accesso con email, Google e Apple abilitato.",
     "auth.mode.demo":
-      "Firebase non è configurato. Modalità demo locale attiva (solo email/password).",
+      "Firebase non è configurato. Modalità demo locale attiva. I pulsanti Google e Apple usano l'accesso demo.",
     "auth.validation.emailPasswordRequired":
       "Email e password sono obbligatorie.",
     "auth.validation.passwordMin":
@@ -194,8 +220,17 @@ const TRANSLATIONS = {
     "settings.placeholder.childrenAges": "4, 8",
     "settings.legend.cuisines": "Cucine preferite",
     "settings.legend.allergies": "Allergie / intolleranze",
+    "settings.legend.mealTemplate": "Pasti per giorno",
+    "settings.schedule.hint":
+      "Seleziona pranzo e/o cena per ogni giorno del ciclo della spesa.",
+    "settings.schedule.header.day": "Giorno ciclo",
+    "settings.schedule.header.lunch": "Pranzo",
+    "settings.schedule.header.dinner": "Cena",
+    "settings.schedule.dayLabel": "Giorno {index} ({day})",
+    "settings.schedule.toggleLabel": "{meal} di {day}",
     "settings.button.save": "Salva impostazioni",
     "settings.button.generate": "Genera piano",
+    "settings.button.regenerate": "Devo rifare la spesa",
     "preview.title": "Anteprima prossimi pasti",
     "preview.cycleHint":
       "Ciclo: {start} - {end} • Prossimo giorno spesa: {next}",
@@ -231,6 +266,8 @@ const TRANSLATIONS = {
       "JavaScript è necessario per eseguire questa applicazione.",
     "status.planGenerated":
       "Nuovo piano generato. Lista spesa e storico aggiornati.",
+    "status.planRegenerated":
+      "Ciclo spesa rigenerato. Piano pasti e lista della spesa aggiornati completamente.",
     "status.settingsSaved": "Impostazioni salvate.",
     "status.mealSwapped": "Ricetta cambiata. Lista spesa aggiornata.",
     "status.ratingSaved":
@@ -256,6 +293,9 @@ const TRANSLATIONS = {
     "error.auth.signOut": "Impossibile eseguire la disconnessione.",
     "error.auth.accountExists": "Esiste già un account con questa email.",
     "error.auth.wrongCredentials": "Credenziali errate.",
+    "error.auth.providerCancelled": "Accesso social annullato.",
+    "error.auth.providerInvalidEmail":
+      "Inserisci un indirizzo email valido per l'accesso social.",
     "error.auth.googleRequiresFirebase":
       "Accesso Google disponibile solo con Firebase configurato.",
     "error.auth.appleRequiresFirebase":
@@ -280,6 +320,8 @@ const TRANSLATIONS = {
       "Il pasto selezionato non è stato trovato nel piano corrente.",
     "planner.error.noAlternative":
       "Nessuna ricetta alternativa disponibile con le preferenze correnti. Rilassa i filtri e riprova.",
+    "planner.error.notEnoughUniqueMeals":
+      "Non ci sono abbastanza ricette uniche per questo ciclo con le impostazioni correnti. Rilassa i filtri o riduci i pasti selezionati.",
     "option.weekday.0": "Domenica",
     "option.weekday.1": "Lunedì",
     "option.weekday.2": "Martedì",

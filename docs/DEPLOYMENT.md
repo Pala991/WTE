@@ -26,6 +26,10 @@ Before deploying publicly:
 2. Enable Email, Google, and Apple providers in Firebase.
 3. Ensure Firestore rules are restricted per user.
 4. Verify the deployed app URL from the workflow output.
+5. Smoke-test key UX paths on the deployed URL:
+   - hamburger navigation (Home / Shopping / Settings / History)
+   - meal-template editing
+   - plan regeneration via “I need to shop again”
 
 ## Troubleshooting
 

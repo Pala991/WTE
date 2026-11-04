@@ -8,12 +8,23 @@
   </head>
   <body>
     <header class="app-header">
-      <div class="container">
-        <h1 data-i18n="app.title">WhatToEat? (WTE)</h1>
-        <p class="subtitle" data-i18n="app.subtitle">
-          Plan lunch and dinner, stay on budget, and update your shopping list
-          automatically.
-        </p>
+      <div class="container header-shell">
+        <button
+          id="menu-toggle"
+          type="button"
+          class="menu-toggle hidden"
+          data-i18n-aria-label="nav.toggle"
+          aria-label="Open app menu"
+        >
+          ☰
+        </button>
+        <div>
+          <h1 data-i18n="app.title">WhatToEat? (WTE)</h1>
+          <p class="subtitle" data-i18n="app.subtitle">
+            Plan lunch and dinner, stay on budget, and update your shopping list
+            automatically.
+          </p>
+        </div>
       </div>
     </header>
 
@@ -59,159 +70,220 @@
         <div class="divider" data-i18n="auth.orContinue">or continue with</div>
 
         <div class="row">
-          <button id="google-auth" type="button" class="ghost" data-i18n="auth.button.google">
-            Google
+          <button id="google-auth" type="button" class="ghost social-button">
+            <span class="social-icon google" aria-hidden="true">G</span>
+            <span data-i18n="auth.button.google">Google</span>
           </button>
-          <button id="apple-auth" type="button" class="ghost" data-i18n="auth.button.apple">
-            Apple
+          <button id="apple-auth" type="button" class="ghost social-button">
+            <span class="social-icon apple" aria-hidden="true"></span>
+            <span data-i18n="auth.button.apple">Apple</span>
           </button>
         </div>
       </section>
 
-      <section id="app-panel" class="hidden">
-        <section class="card user-row">
-          <div>
-            <h2 class="h3" data-i18n="account.title">Account</h2>
-            <p class="muted" id="user-email">-</p>
-          </div>
-          <button
-            id="logout-button"
-            type="button"
-            class="ghost"
-            data-i18n="account.button.signOut"
-          >
-            Sign out
-          </button>
-        </section>
+      <section id="app-panel" class="hidden app-shell">
+        <aside id="side-menu" class="side-menu">
+          <nav class="menu-nav">
+            <button type="button" class="menu-link active" data-view-target="home" data-i18n="nav.home">
+              Home
+            </button>
+            <button type="button" class="menu-link" data-view-target="shopping" data-i18n="nav.shopping">
+              Shopping
+            </button>
+            <button type="button" class="menu-link" data-view-target="settings" data-i18n="nav.settings">
+              Settings
+            </button>
+            <button type="button" class="menu-link" data-view-target="history" data-i18n="nav.history">
+              History
+            </button>
+          </nav>
+        </aside>
 
-        <section class="card">
-          <h2 data-i18n="settings.title">Preferences</h2>
-
-          <form id="settings-form" class="stack">
-            <div class="grid two">
-              <label>
-                <span data-i18n="settings.label.language">App language</span>
-                <select name="language" id="language-select"></select>
-              </label>
-
-              <label>
-                <span data-i18n="settings.label.shoppingDay">Shopping day</span>
-                <select name="shoppingDay" id="shopping-day-select"></select>
-              </label>
+        <div class="content-shell">
+          <section class="card user-row">
+            <div>
+              <h2 class="h3" data-i18n="account.title">Account</h2>
+              <p class="muted" id="user-email">-</p>
             </div>
+            <button
+              id="logout-button"
+              type="button"
+              class="ghost"
+              data-i18n="account.button.signOut"
+            >
+              Sign out
+            </button>
+          </section>
 
-            <div class="grid two">
-              <label>
-                <span data-i18n="settings.label.shoppingIntervalDays">
-                  Shopping interval (days)
-                </span>
-                <input
-                  type="number"
-                  name="shoppingIntervalDays"
-                  min="3"
-                  max="21"
-                  step="1"
-                />
-              </label>
+          <section id="view-home" class="app-view" data-app-view="home">
+            <section class="card">
+              <h2 data-i18n="preview.title">Upcoming meal preview</h2>
+              <p id="shopping-cycle-hint" class="muted"></p>
+              <ul id="preview-list" class="list"></ul>
+            </section>
 
-              <label>
-                <span data-i18n="settings.label.maxPrepMinutes">
-                  Max preparation time (minutes)
-                </span>
-                <input
-                  type="number"
-                  name="maxPrepMinutes"
-                  min="15"
-                  max="180"
-                  step="5"
-                />
-              </label>
-            </div>
+            <section class="card">
+              <div class="section-title-row">
+                <h2 data-i18n="plan.title">Meal plan</h2>
+                <button
+                  type="button"
+                  class="ghost"
+                  data-action="regenerate-plan"
+                  data-i18n="settings.button.regenerate"
+                >
+                  I need to shop again
+                </button>
+              </div>
+              <div id="meal-plan" class="meal-grid"></div>
+            </section>
+          </section>
 
-            <div class="grid two">
-              <label>
-                <span data-i18n="settings.label.budgetMin">Budget min (EUR)</span>
-                <input type="number" name="budgetMin" min="0" step="1" />
-              </label>
-              <label>
-                <span data-i18n="settings.label.budgetMax">Budget max (EUR)</span>
-                <input type="number" name="budgetMax" min="0" step="1" />
-              </label>
-            </div>
+          <section id="view-shopping" class="app-view hidden" data-app-view="shopping">
+            <section class="card">
+              <div class="section-title-row">
+                <h2 data-i18n="shopping.summaryTitle">Shopping list</h2>
+                <button
+                  type="button"
+                  class="ghost"
+                  data-action="regenerate-plan"
+                  data-i18n="settings.button.regenerate"
+                >
+                  I need to shop again
+                </button>
+              </div>
+              <div id="shopping-summary" class="stack small"></div>
+              <ul id="shopping-list" class="list"></ul>
+            </section>
+          </section>
 
-            <div class="grid two">
-              <label>
-                <span data-i18n="settings.label.dietProfile">Diet profile</span>
-                <select name="dietProfile" id="diet-profile-select"></select>
-              </label>
-              <label>
-                <span data-i18n="settings.label.difficulty">Difficulty</span>
-                <select name="difficulty" id="difficulty-select"></select>
-              </label>
-            </div>
+          <section id="view-settings" class="app-view hidden" data-app-view="settings">
+            <section class="card">
+              <h2 data-i18n="settings.title">Preferences</h2>
 
-            <div class="grid two">
-              <label>
-                <span data-i18n="settings.label.adults">Adults</span>
-                <input type="number" name="adults" min="1" max="8" step="1" />
-              </label>
+              <form id="settings-form" class="stack">
+                <div class="grid two">
+                  <label>
+                    <span data-i18n="settings.label.language">App language</span>
+                    <select name="language" id="language-select"></select>
+                  </label>
 
-              <label>
-                <span data-i18n="settings.label.childrenAges">
-                  Children ages (comma separated, example: 4, 8)
-                </span>
-                <input
-                  type="text"
-                  name="childrenAgesInput"
-                  data-i18n-placeholder="settings.placeholder.childrenAges"
-                  placeholder="4, 8"
-                />
-              </label>
-            </div>
+                  <label>
+                    <span data-i18n="settings.label.shoppingDay">Shopping day</span>
+                    <select name="shoppingDay" id="shopping-day-select"></select>
+                  </label>
+                </div>
 
-            <fieldset>
-              <legend data-i18n="settings.legend.cuisines">Preferred cuisines</legend>
-              <div id="cuisine-options" class="chip-group"></div>
-            </fieldset>
+                <div class="grid two">
+                  <label>
+                    <span data-i18n="settings.label.shoppingIntervalDays">
+                      Shopping interval (days)
+                    </span>
+                    <input
+                      type="number"
+                      name="shoppingIntervalDays"
+                      min="3"
+                      max="21"
+                      step="1"
+                    />
+                  </label>
 
-            <fieldset>
-              <legend data-i18n="settings.legend.allergies">Allergies / intolerances</legend>
-              <div id="allergy-options" class="chip-group"></div>
-            </fieldset>
+                  <label>
+                    <span data-i18n="settings.label.maxPrepMinutes">
+                      Max preparation time (minutes)
+                    </span>
+                    <input
+                      type="number"
+                      name="maxPrepMinutes"
+                      min="15"
+                      max="180"
+                      step="5"
+                    />
+                  </label>
+                </div>
 
-            <div class="row">
-              <button type="button" id="save-settings" class="ghost" data-i18n="settings.button.save">
-                Save settings
-              </button>
-              <button type="submit" id="generate-plan" data-i18n="settings.button.generate">
-                Generate plan
-              </button>
-            </div>
-          </form>
-        </section>
+                <div class="grid two">
+                  <label>
+                    <span data-i18n="settings.label.budgetMin">Budget min (EUR)</span>
+                    <input type="number" name="budgetMin" min="0" step="1" />
+                  </label>
+                  <label>
+                    <span data-i18n="settings.label.budgetMax">Budget max (EUR)</span>
+                    <input type="number" name="budgetMax" min="0" step="1" />
+                  </label>
+                </div>
 
-        <section class="card">
-          <h2 data-i18n="preview.title">Upcoming meal preview</h2>
-          <p id="shopping-cycle-hint" class="muted"></p>
-          <ul id="preview-list" class="list"></ul>
-        </section>
+                <div class="grid two">
+                  <label>
+                    <span data-i18n="settings.label.dietProfile">Diet profile</span>
+                    <select name="dietProfile" id="diet-profile-select"></select>
+                  </label>
+                  <label>
+                    <span data-i18n="settings.label.difficulty">Difficulty</span>
+                    <select name="difficulty" id="difficulty-select"></select>
+                  </label>
+                </div>
 
-        <section class="card">
-          <h2 data-i18n="plan.title">Meal plan</h2>
+                <div class="grid two">
+                  <label>
+                    <span data-i18n="settings.label.adults">Adults</span>
+                    <input type="number" name="adults" min="1" max="8" step="1" />
+                  </label>
 
-          <details id="shopping-list-panel" open>
-            <summary data-i18n="shopping.summaryTitle">Shopping list</summary>
-            <div id="shopping-summary" class="stack small"></div>
-            <ul id="shopping-list" class="list"></ul>
-          </details>
+                  <label>
+                    <span data-i18n="settings.label.childrenAges">
+                      Children ages (comma separated, example: 4, 8)
+                    </span>
+                    <input
+                      type="text"
+                      name="childrenAgesInput"
+                      data-i18n-placeholder="settings.placeholder.childrenAges"
+                      placeholder="4, 8"
+                    />
+                  </label>
+                </div>
 
-          <div id="meal-plan" class="meal-grid"></div>
-        </section>
+                <fieldset>
+                  <legend data-i18n="settings.legend.mealTemplate">Meals per day</legend>
+                  <p class="muted" data-i18n="settings.schedule.hint">
+                    Select lunch and/or dinner for each day of the shopping cycle.
+                  </p>
+                  <div id="meal-template-grid"></div>
+                </fieldset>
 
-        <section class="card">
-          <h2 data-i18n="history.title">Plan history</h2>
-          <ul id="history-list" class="list"></ul>
-        </section>
+                <fieldset>
+                  <legend data-i18n="settings.legend.cuisines">Preferred cuisines</legend>
+                  <div id="cuisine-options" class="chip-group"></div>
+                </fieldset>
+
+                <fieldset>
+                  <legend data-i18n="settings.legend.allergies">Allergies / intolerances</legend>
+                  <div id="allergy-options" class="chip-group"></div>
+                </fieldset>
+
+                <div class="row">
+                  <button
+                    type="button"
+                    id="save-settings"
+                    class="ghost"
+                    data-i18n="settings.button.save"
+                  >
+                    Save settings
+                  </button>
+                  <button type="submit" id="generate-plan" data-i18n="settings.button.generate">
+                    Generate plan
+                  </button>
+                </div>
+              </form>
+            </section>
+          </section>
+
+          <section id="view-history" class="app-view hidden" data-app-view="history">
+            <section class="card">
+              <h2 data-i18n="history.title">Plan history</h2>
+              <ul id="history-list" class="list"></ul>
+            </section>
+          </section>
+        </div>
       </section>
     </main>
 

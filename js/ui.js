@@ -6,6 +6,11 @@ import {
   LANGUAGE_OPTIONS,
   WEEKDAY_OPTIONS
 } from "./constants.js";
+import {
+  localizeIngredientName,
+  localizeRecipeName,
+  localizeSeasonalityNote
+} from "./content-localization.js";
 import { createTranslator } from "./i18n.js";
 import { formatDate, formatDateTime, formatEuro, round } from "./utils.js";
 
@@ -142,6 +147,21 @@ export function readSettingsFromForm(form) {
   const allergies = [...form.querySelectorAll('input[name="allergies"]:checked')].map(
     (input) => input.value
   );
+  const mealPlanTemplate = [
+    ...form.querySelectorAll("[data-template-day-index]")
+  ].map((row) => {
+    const dayIndex = Number.parseInt(row.dataset.templateDayIndex ?? "", 10);
+    const lunch = row.querySelector('[data-template-meal="lunch"]');
+    const dinner = row.querySelector('[data-template-meal="dinner"]');
+
+    return {
+      dayIndex,
+      lunch: lunch?.checked ?? false,
+      dinner: dinner?.checked ?? false
+    };
+  });
+
+  mealPlanTemplate.sort((left, right) => left.dayIndex - right.dayIndex);
 
   return {
     language: form.elements.language.value,
@@ -155,8 +175,93 @@ export function readSettingsFromForm(form) {
     maxPrepMinutes: form.elements.maxPrepMinutes.value,
     adults: form.elements.adults.value,
     childrenAgesInput: form.elements.childrenAgesInput.value,
-    allergies
+    allergies,
+    mealPlanTemplate
   };
+}
+
+export function renderMealPlanTemplate(container, settings, i18n) {
+  clearElement(container);
+  const translator = resolveTranslator(i18n);
+  const { t } = translator;
+
+  const table = document.createElement("table");
+  table.className = "schedule-table";
+
+  const header = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+
+  const dayHeader = document.createElement("th");
+  dayHeader.scope = "col";
+  dayHeader.textContent = t("settings.schedule.header.day");
+  headerRow.append(dayHeader);
+
+  const lunchHeader = document.createElement("th");
+  lunchHeader.scope = "col";
+  lunchHeader.textContent = t("settings.schedule.header.lunch");
+  headerRow.append(lunchHeader);
+
+  const dinnerHeader = document.createElement("th");
+  dinnerHeader.scope = "col";
+  dinnerHeader.textContent = t("settings.schedule.header.dinner");
+  headerRow.append(dinnerHeader);
+
+  header.append(headerRow);
+  table.append(header);
+
+  const body = document.createElement("tbody");
+  for (let dayIndex = 0; dayIndex < settings.shoppingIntervalDays; dayIndex += 1) {
+    const dayTemplate = settings.mealPlanTemplate[dayIndex] ?? {
+      lunch: true,
+      dinner: true
+    };
+    const weekdayNumber = (settings.shoppingDay + dayIndex) % 7;
+
+    const row = document.createElement("tr");
+    row.dataset.templateDayIndex = String(dayIndex);
+
+    const dayCell = document.createElement("td");
+    dayCell.textContent = t("settings.schedule.dayLabel", {
+      index: dayIndex + 1,
+      day: t(`option.weekday.${weekdayNumber}`)
+    });
+    row.append(dayCell);
+
+    const lunchCell = document.createElement("td");
+    const lunchCheckbox = document.createElement("input");
+    lunchCheckbox.type = "checkbox";
+    lunchCheckbox.dataset.templateMeal = "lunch";
+    lunchCheckbox.checked = dayTemplate.lunch !== false;
+    lunchCheckbox.setAttribute(
+      "aria-label",
+      t("settings.schedule.toggleLabel", {
+        meal: t("preview.meal.lunch"),
+        day: t(`option.weekday.${weekdayNumber}`)
+      })
+    );
+    lunchCell.append(lunchCheckbox);
+    row.append(lunchCell);
+
+    const dinnerCell = document.createElement("td");
+    const dinnerCheckbox = document.createElement("input");
+    dinnerCheckbox.type = "checkbox";
+    dinnerCheckbox.dataset.templateMeal = "dinner";
+    dinnerCheckbox.checked = dayTemplate.dinner !== false;
+    dinnerCheckbox.setAttribute(
+      "aria-label",
+      t("settings.schedule.toggleLabel", {
+        meal: t("preview.meal.dinner"),
+        day: t(`option.weekday.${weekdayNumber}`)
+      })
+    );
+    dinnerCell.append(dinnerCheckbox);
+    row.append(dinnerCell);
+
+    body.append(row);
+  }
+
+  table.append(body);
+  container.append(table);
 }
 
 export function renderPreview(
@@ -172,7 +277,14 @@ export function renderPreview(
   for (const slot of slots) {
     const item = document.createElement("li");
     const label = t(`preview.meal.${slot.mealType}`);
-    const plannedRecipe = recipeBySlotId.get(slot.id);
+    const plannedMeal = recipeBySlotId.get(slot.id);
+    const plannedRecipe = plannedMeal
+      ? localizeRecipeName(
+          plannedMeal.recipeId,
+          plannedMeal.recipeName,
+          translator.language
+        )
+      : null;
     item.textContent = plannedRecipe
       ? t("preview.item.withRecipe", {
           date: slot.dateLabel,
@@ -187,8 +299,9 @@ export function renderPreview(
   }
 }
 
-function ingredientToText(ingredient) {
-  return `${ingredient.quantity} ${ingredient.unit} ${ingredient.name}`;
+function ingredientToText(ingredient, language) {
+  const localizedName = localizeIngredientName(ingredient.name, language);
+  return `${ingredient.quantity} ${ingredient.unit} ${localizedName}`;
 }
 
 export function renderShoppingList(summaryElement, listElement, plan, i18n) {
@@ -228,13 +341,15 @@ export function renderShoppingList(summaryElement, listElement, plan, i18n) {
   if (plan.notes?.length) {
     const noteBlock = document.createElement("div");
     noteBlock.className = "notes";
-    noteBlock.textContent = plan.notes.join(" ");
+    noteBlock.textContent = plan.notes
+      .map((note) => localizeSeasonalityNote(note, translator.language))
+      .join(" ");
     summaryElement.append(noteBlock);
   }
 
   for (const item of plan.shoppingList) {
     const li = document.createElement("li");
-    li.textContent = ingredientToText(item);
+    li.textContent = ingredientToText(item, translator.language);
     listElement.append(li);
   }
 }
@@ -285,6 +400,18 @@ function createRatingButtons(currentAverage) {
   return row;
 }
 
+function warningToText(warning, i18n) {
+  if (typeof warning === "string") {
+    return warning;
+  }
+
+  if (!warning || typeof warning !== "object" || !warning.key) {
+    return "";
+  }
+
+  return i18n.t(warning.key, warning.params ?? {});
+}
+
 export function renderMeals(container, plan, ratings, i18n) {
   clearElement(container);
   const translator = resolveTranslator(i18n);
@@ -299,13 +426,18 @@ export function renderMeals(container, plan, ratings, i18n) {
   }
 
   for (const meal of plan.meals) {
+    const localizedRecipeName = localizeRecipeName(
+      meal.recipeId,
+      meal.recipeName,
+      translator.language
+    );
     const card = document.createElement("article");
     card.className = "meal-card";
     card.dataset.mealId = meal.id;
 
     const image = document.createElement("img");
     image.src = meal.imageUrl;
-    image.alt = meal.recipeName;
+    image.alt = localizedRecipeName;
     image.loading = "lazy";
     card.append(image);
 
@@ -320,7 +452,7 @@ export function renderMeals(container, plan, ratings, i18n) {
     content.append(mealMeta);
 
     const title = document.createElement("h3");
-    title.textContent = meal.recipeName;
+    title.textContent = localizedRecipeName;
     content.append(title);
 
     const details = document.createElement("p");
@@ -359,21 +491,28 @@ export function renderMeals(container, plan, ratings, i18n) {
     appendListSection(
       content,
       t("meal.section.ingredients"),
-      meal.ingredients.map(ingredientToText)
+      meal.ingredients.map((ingredient) =>
+        ingredientToText(ingredient, translator.language)
+      )
     );
     appendListSection(content, t("meal.section.steps"), meal.steps);
 
     if (meal.seasonalityNotes.length > 0) {
       const seasonalNotes = document.createElement("div");
       seasonalNotes.className = "notes";
-      seasonalNotes.textContent = meal.seasonalityNotes.join(" ");
+      seasonalNotes.textContent = meal.seasonalityNotes
+        .map((note) => localizeSeasonalityNote(note, translator.language))
+        .join(" ");
       content.append(seasonalNotes);
     }
 
     if (meal.childWarnings.length > 0) {
       const warningNotes = document.createElement("div");
       warningNotes.className = "notes";
-      warningNotes.textContent = meal.childWarnings.join(" ");
+      warningNotes.textContent = meal.childWarnings
+        .map((warning) => warningToText(warning, translator))
+        .filter(Boolean)
+        .join(" ");
       content.append(warningNotes);
     }
 

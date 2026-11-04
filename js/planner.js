@@ -1,5 +1,6 @@
 import {
   ALLERGY_OPTIONS,
+  buildDefaultMealPlanTemplate,
   cloneDefaultSettings,
   CUISINE_OPTIONS,
   DEFAULT_SETTINGS,
@@ -135,6 +136,35 @@ function sanitizeAllergies(value) {
   return unique(list.filter((item) => ALLOWED_ALLERGIES.has(item)));
 }
 
+function normalizeMealPlanTemplate(value, shoppingIntervalDays) {
+  const template = buildDefaultMealPlanTemplate(shoppingIntervalDays);
+  const source = Array.isArray(value) ? value : [];
+
+  source.forEach((rawDay, index) => {
+    if (!rawDay || typeof rawDay !== "object") {
+      return;
+    }
+
+    const dayIndex = safeInteger(rawDay.dayIndex, Number.NaN);
+    const targetIndex = Number.isFinite(dayIndex) ? dayIndex : index;
+    if (targetIndex < 0 || targetIndex >= template.length) {
+      return;
+    }
+
+    template[targetIndex] = {
+      lunch: rawDay.lunch !== false,
+      dinner: rawDay.dinner !== false
+    };
+  });
+
+  const hasAtLeastOneMeal = template.some((day) => day.lunch || day.dinner);
+  if (!hasAtLeastOneMeal) {
+    template[0] = { lunch: true, dinner: false };
+  }
+
+  return template;
+}
+
 export function sanitizeSettings(raw) {
   const base = cloneDefaultSettings();
   const source = raw ?? {};
@@ -178,6 +208,11 @@ export function sanitizeSettings(raw) {
     ? source.difficulty
     : base.difficulty;
 
+  const mealPlanTemplate = normalizeMealPlanTemplate(
+    source.mealPlanTemplate ?? base.mealPlanTemplate,
+    shoppingIntervalDays
+  );
+
   return {
     language,
     shoppingIntervalDays,
@@ -190,7 +225,8 @@ export function sanitizeSettings(raw) {
     maxPrepMinutes,
     adults,
     childrenAges,
-    allergies: sanitizeAllergies(source.allergies)
+    allergies: sanitizeAllergies(source.allergies),
+    mealPlanTemplate
   };
 }
 
@@ -324,9 +360,10 @@ function recipeMatchesStage(recipe, settings, slotMealType, stageOptions) {
   return true;
 }
 
-function getCandidatesForSlot(settings, slotMealType) {
+function getCandidatesForSlot(settings, slotMealType, excludedRecipeIds = new Set()) {
   for (const stage of FILTER_STAGES) {
     const recipes = RECIPES.filter((recipe) =>
+      !excludedRecipeIds.has(recipe.id) &&
       recipeMatchesStage(recipe, settings, slotMealType, stage.options)
     );
 
@@ -343,6 +380,7 @@ function getCandidatesForSlot(settings, slotMealType) {
   return {
     recipes: RECIPES.filter(
       (recipe) =>
+        !excludedRecipeIds.has(recipe.id) &&
         recipe.mealMoments.includes(slotMealType) &&
         !violatesAllergyRules(recipe, settings.allergies)
     ),
@@ -415,7 +453,7 @@ function scoreRecipe(recipe, context) {
   return score;
 }
 
-function evaluateChildWarnings(ingredients, childrenAges, language) {
+function evaluateChildWarnings(ingredients, childrenAges) {
   if (!childrenAges.length) {
     return [];
   }
@@ -434,12 +472,25 @@ function evaluateChildWarnings(ingredients, childrenAges, language) {
       });
 
       if (matchesRule) {
-        warnings.push(translate(language, rule.warningKey, { age }));
+        warnings.push({
+          key: rule.warningKey,
+          params: { age }
+        });
       }
     }
   }
 
-  return unique(warnings);
+  const deduplicated = [];
+  const seen = new Set();
+  for (const warning of warnings) {
+    const identity = `${warning.key}::${warning.params.age}`;
+    if (seen.has(identity)) {
+      continue;
+    }
+    seen.add(identity);
+    deduplicated.push(warning);
+  }
+  return deduplicated;
 }
 
 function buildMeal(slot, recipe, settings, season) {
@@ -452,11 +503,7 @@ function buildMeal(slot, recipe, settings, season) {
   }));
 
   const { ingredients, notes } = adaptIngredientsToSeason(scaledIngredients, season);
-  const childWarnings = evaluateChildWarnings(
-    ingredients,
-    settings.childrenAges,
-    settings.language
-  );
+  const childWarnings = evaluateChildWarnings(ingredients, settings.childrenAges);
 
   return {
     id: slot.id,
@@ -545,13 +592,26 @@ export function buildMealSlots(settingsInput, now = new Date()) {
     const date = addDays(start, dayOffset);
     const dateKey = toDateKey(date);
     const dateLabel = formatDate(date, locale);
+    const dayTemplate = settings.mealPlanTemplate[dayOffset] ?? {
+      lunch: true,
+      dinner: true
+    };
 
-    for (const mealType of MEAL_TYPES) {
+    if (dayTemplate.lunch) {
       slots.push({
-        id: `${dateKey}-${mealType}`,
+        id: `${dateKey}-lunch`,
         date: dateKey,
         dateLabel,
-        mealType
+        mealType: "lunch"
+      });
+    }
+
+    if (dayTemplate.dinner) {
+      slots.push({
+        id: `${dateKey}-dinner`,
+        date: dateKey,
+        dateLabel,
+        mealType: "dinner"
       });
     }
   }
@@ -591,11 +651,21 @@ export function generatePlan(settingsInput, ratings = {}, now = new Date()) {
 
   const recentRecipeIds = [];
   const focusUsage = {};
+  const usedRecipeIds = new Set();
   const notes = [];
   let lastNutritionFocus = null;
 
   const meals = slots.map((slot) => {
-    const { recipes, reason } = getCandidatesForSlot(settings, slot.mealType);
+    const { recipes, reason } = getCandidatesForSlot(
+      settings,
+      slot.mealType,
+      usedRecipeIds
+    );
+
+    if (recipes.length === 0) {
+      throw new Error("planner.error.notEnoughUniqueMeals");
+    }
+
     if (reason) {
       notes.push(reason);
     }
@@ -617,6 +687,7 @@ export function generatePlan(settingsInput, ratings = {}, now = new Date()) {
     const selected = scored[0].recipe;
     const meal = buildMeal(slot, selected, settings, season);
 
+    usedRecipeIds.add(selected.id);
     recentRecipeIds.push(selected.id);
     if (recentRecipeIds.length > 6) {
       recentRecipeIds.shift();
@@ -675,18 +746,15 @@ export function swapMealInPlan(planInput, mealId, settingsInput, ratings = {}) {
   }
 
   const targetMeal = orderedMeals[targetMealIndex];
-  const { recipes, reason } = getCandidatesForSlot(settings, targetMeal.mealType);
-
   const existingRecipeIds = new Set(plan.meals.map((meal) => meal.recipeId));
   existingRecipeIds.delete(targetMeal.recipeId);
-
-  const alternatives = recipes.filter(
-    (recipe) => recipe.id !== targetMeal.recipeId && !existingRecipeIds.has(recipe.id)
+  const { recipes, reason } = getCandidatesForSlot(
+    settings,
+    targetMeal.mealType,
+    existingRecipeIds
   );
 
-  const candidates = alternatives.length > 0
-    ? alternatives
-    : recipes.filter((recipe) => recipe.id !== targetMeal.recipeId);
+  const candidates = recipes.filter((recipe) => recipe.id !== targetMeal.recipeId);
 
   if (candidates.length === 0) {
     throw new Error(tForSettings(settings, "planner.error.noAlternative"));

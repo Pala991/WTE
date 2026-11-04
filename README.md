@@ -6,15 +6,20 @@ Live URL: https://pala991.github.io/WTE/
 
 The app is designed to be deployed on **GitHub Pages** and supports:
 
-- user authentication (email/password, Google, Apple) through Firebase Auth
+- user authentication (email/password, Google, Apple)
 - personal settings and history per user
 - shopping-cycle planning (default 7 days, anchored to Saturday)
+- meal-template settings (choose lunch/dinner per cycle day)
 - cuisine, diet, budget, timing, allergy and household constraints
 - user-selectable app language (English / Italian)
+- localized recipe names and ingredient names (English / Italian)
+- strict no-repeat recipes inside each generated cycle
+- one-click full cycle regeneration (“I need to shop again”)
 - meal swaps with automatic grocery-list updates
 - seasonal ingredient adaptations (for example, preserved tomato products in winter)
 
-> If Firebase is not configured yet, the app runs in **local demo mode** (email/password only, stored in localStorage) so you can test all planning features immediately.
+> If Firebase is not configured yet, the app runs in **local demo mode** (stored in localStorage).  
+> In demo mode, Google/Apple buttons use a demo sign-in flow so you can test the full UX without cloud setup.
 
 ---
 
@@ -29,6 +34,7 @@ The app is designed to be deployed on **GitHub Pages** and supports:
 │   ├── app.js
 │   ├── auth.js
 │   ├── constants.js
+│   ├── content-localization.js
 │   ├── data-service.js
 │   ├── firebase-client.js
 │   ├── firebase-config.js
@@ -95,10 +101,15 @@ Detailed instructions: [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
 
 - **Authentication**
   - Email/password sign up and sign in
-  - Google and Apple popup sign in (when Firebase is configured)
+  - Google and Apple popup sign in (Firebase mode)
+  - Google and Apple demo sign in fallback (demo mode)
+- **Navigation**
+  - top-left hamburger menu
+  - dedicated views for Home, Shopping, Settings, History
 - **User settings**
   - shopping interval days
   - shopping weekday anchor
+  - per-day meal template (lunch/dinner toggles for the whole cycle)
   - budget range (EUR)
   - app language (English / Italian)
   - multi-select cuisines (Italian default)
@@ -108,8 +119,9 @@ Detailed instructions: [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
   - household adults + children ages
   - common allergies/intolerances
 - **Planner**
-  - lunch+dinner slots for the cycle
+  - slots generated from the configured per-day meal template
   - scored recipe selection using preferences and past ratings
+  - no recipe repeats inside the same generated cycle
   - seasonal substitutions and warnings
   - child-specific warnings with alternatives
 - **Meal cards**
@@ -120,9 +132,10 @@ Detailed instructions: [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
   - preparation steps
   - rating controls (1-5)
 - **Shopping list**
-  - expandable panel
+  - dedicated view
   - aggregated ingredients, quantities, units
   - estimated budget range and target check
+  - one-click full regeneration via **I need to shop again**
 - **History**
   - per-user plan snapshots
   - load a previous plan

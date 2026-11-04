@@ -43,6 +43,13 @@ export const DIFFICULTY_OPTIONS = [
 export const MEAL_TYPES = ["lunch", "dinner"];
 export const LANGUAGE_OPTIONS = ["en", "it"];
 
+export function buildDefaultMealPlanTemplate(intervalDays = 7) {
+  return Array.from({ length: intervalDays }, () => ({
+    lunch: true,
+    dinner: true
+  }));
+}
+
 export const DEFAULT_SETTINGS = Object.freeze({
   language: "en",
   shoppingIntervalDays: 7,
@@ -55,7 +62,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
   maxPrepMinutes: 60,
   adults: 2,
   childrenAges: [],
-  allergies: []
+  allergies: [],
+  mealPlanTemplate: buildDefaultMealPlanTemplate(7)
 });
 
 export function cloneDefaultSettings() {
@@ -71,6 +79,10 @@ export function cloneDefaultSettings() {
     maxPrepMinutes: DEFAULT_SETTINGS.maxPrepMinutes,
     adults: DEFAULT_SETTINGS.adults,
     childrenAges: [...DEFAULT_SETTINGS.childrenAges],
-    allergies: [...DEFAULT_SETTINGS.allergies]
+    allergies: [...DEFAULT_SETTINGS.allergies],
+    mealPlanTemplate: DEFAULT_SETTINGS.mealPlanTemplate.map((item) => ({
+      lunch: item.lunch,
+      dinner: item.dinner
+    }))
   };
 }

@@ -73,6 +73,40 @@ function notifyDemoSubscribers(user) {
   }
 }
 
+function signInWithDemoProvider(providerName) {
+  const email = window.prompt(
+    `Enter your ${providerName} email to continue in demo mode.`
+  );
+
+  if (!email) {
+    throw new Error("error.auth.providerCancelled");
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail.includes("@")) {
+    throw new Error("error.auth.providerInvalidEmail");
+  }
+
+  const users = getDemoUsers();
+  const account = users[normalizedEmail];
+  const uid = account?.uid ?? buildDemoUid(normalizedEmail);
+
+  if (!account) {
+    users[normalizedEmail] = { password: null, uid };
+    saveDemoUsers(users);
+  }
+
+  const user = {
+    uid,
+    email: normalizedEmail,
+    provider: `demo-${providerName.toLowerCase()}`
+  };
+
+  setDemoSessionUser(user);
+  notifyDemoSubscribers(user);
+  return user;
+}
+
 export function subscribeAuthChanges(callback) {
   if (authMode === "firebase") {
     return onAuthStateChanged(auth, (firebaseUser) => {
@@ -143,7 +177,7 @@ export async function signInWithEmail(email, password) {
 
 export async function signInWithGoogle() {
   if (authMode !== "firebase") {
-    throw new Error("error.auth.googleRequiresFirebase");
+    return signInWithDemoProvider("Google");
   }
 
   const provider = new GoogleAuthProvider();
@@ -154,7 +188,7 @@ export async function signInWithGoogle() {
 
 export async function signInWithApple() {
   if (authMode !== "firebase") {
-    throw new Error("error.auth.appleRequiresFirebase");
+    return signInWithDemoProvider("Apple");
   }
 
   const provider = new OAuthProvider("apple.com");

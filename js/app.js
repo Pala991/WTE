@@ -23,6 +23,7 @@ import {
   populateSettingsForm,
   readSettingsFromForm,
   renderHistory,
+  renderMealPlanTemplate,
   renderMeals,
   renderPreview,
   renderShoppingList,
@@ -38,7 +39,8 @@ const state = {
   ratings: {},
   plan: null,
   history: [],
-  i18n: createTranslator(defaultSettings.language)
+  i18n: createTranslator(defaultSettings.language),
+  activeView: "home"
 };
 
 const recipeImageById = new Map(
@@ -49,6 +51,10 @@ const elements = {
   systemMessage: document.querySelector("#system-message"),
   authPanel: document.querySelector("#auth-panel"),
   appPanel: document.querySelector("#app-panel"),
+  menuToggle: document.querySelector("#menu-toggle"),
+  sideMenu: document.querySelector("#side-menu"),
+  viewButtons: document.querySelectorAll("[data-view-target]"),
+  views: document.querySelectorAll("[data-app-view]"),
   authModeNote: document.querySelector("#auth-mode-note"),
   authEmail: document.querySelector("#auth-email"),
   authPassword: document.querySelector("#auth-password"),
@@ -65,7 +71,9 @@ const elements = {
   difficultySelect: document.querySelector("#difficulty-select"),
   cuisineOptions: document.querySelector("#cuisine-options"),
   allergyOptions: document.querySelector("#allergy-options"),
+  mealTemplateContainer: document.querySelector("#meal-template-grid"),
   saveSettings: document.querySelector("#save-settings"),
+  regenerateButtons: document.querySelectorAll('[data-action="regenerate-plan"]'),
   previewList: document.querySelector("#preview-list"),
   shoppingCycleHint: document.querySelector("#shopping-cycle-hint"),
   shoppingSummary: document.querySelector("#shopping-summary"),
@@ -111,6 +119,14 @@ function applyStaticTranslations() {
     }
     node.setAttribute("placeholder", t(key));
   });
+
+  document.querySelectorAll("[data-i18n-aria-label]").forEach((node) => {
+    const key = node.getAttribute("data-i18n-aria-label");
+    if (!key) {
+      return;
+    }
+    node.setAttribute("aria-label", t(key));
+  });
 }
 
 function refreshSettingsForm(settingsForForm) {
@@ -127,13 +143,47 @@ function refreshSettingsForm(settingsForForm) {
   );
 
   populateSettingsForm(elements.settingsForm, settingsForForm);
+  renderMealPlanTemplate(
+    elements.mealTemplateContainer,
+    settingsForForm,
+    state.i18n
+  );
 }
 
 function updateLanguageAndUi(language, settingsForForm) {
   setLanguage(language);
   applyStaticTranslations();
   refreshSettingsForm(settingsForForm);
+  updateActiveViewUi();
   markAuthMode();
+}
+
+function closeMenu() {
+  elements.sideMenu.classList.remove("open");
+}
+
+function toggleMenu() {
+  elements.sideMenu.classList.toggle("open");
+}
+
+function updateActiveViewUi() {
+  for (const button of elements.viewButtons) {
+    const targetView = button.dataset.viewTarget;
+    const isActive = targetView === state.activeView;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-current", isActive ? "page" : "false");
+  }
+
+  for (const view of elements.views) {
+    const isActive = view.dataset.appView === state.activeView;
+    view.classList.toggle("hidden", !isActive);
+  }
+}
+
+function setActiveView(view) {
+  state.activeView = view;
+  updateActiveViewUi();
+  closeMenu();
 }
 
 function ensureStateShape(stateFromStorage) {
@@ -173,7 +223,12 @@ function planRecipeMap(plan) {
   if (!plan) {
     return new Map();
   }
-  return new Map(plan.meals.map((meal) => [meal.id, meal.recipeName]));
+  return new Map(
+    plan.meals.map((meal) => [
+      meal.id,
+      { recipeId: meal.recipeId, recipeName: meal.recipeName }
+    ])
+  );
 }
 
 function renderPreviewFromDraft(draftSettingsOverride = null) {
@@ -213,13 +268,6 @@ function markAuthMode() {
   const authModeKey =
     authMode === "firebase" ? "auth.mode.firebase" : "auth.mode.demo";
   elements.authModeNote.textContent = state.i18n.t(authModeKey);
-
-  if (authMode === "demo") {
-    elements.googleAuth.disabled = true;
-    elements.appleAuth.disabled = true;
-    return;
-  }
-
   elements.googleAuth.disabled = false;
   elements.appleAuth.disabled = false;
 }
@@ -321,11 +369,14 @@ function parseFriendlyError(error, fallbackKey) {
 
 async function onGeneratePlan(event) {
   event.preventDefault();
+  await regeneratePlan("generate-plan", "status.planGenerated");
+}
+
+async function regeneratePlan(reason, successMessageKey) {
   clearStatus();
 
   try {
-    const freshSettings = sanitizeSettings(readSettingsFromForm(elements.settingsForm));
-    state.settings = freshSettings;
+    state.settings = sanitizeSettings(readSettingsFromForm(elements.settingsForm));
     updateLanguageAndUi(state.settings.language, state.settings);
 
     const plan = generatePlan(state.settings, state.ratings, new Date());
@@ -334,12 +385,24 @@ async function onGeneratePlan(event) {
 
     upsertHistoryWithCurrentPlan();
     renderPlanSections(state.settings);
-    await persistState("generate-plan");
+    await persistState(reason);
 
-    showStatusByKey("success", "status.planGenerated");
+    showStatusByKey("success", successMessageKey);
+    return true;
   } catch (error) {
     console.error(error);
     showStatus("error", parseFriendlyError(error, "error.plan.generate"));
+    return false;
+  }
+}
+
+async function onRegeneratePlan() {
+  const completed = await regeneratePlan(
+    "regenerate-plan",
+    "status.planRegenerated"
+  );
+  if (completed) {
+    setActiveView("shopping");
   }
 }
 
@@ -440,14 +503,26 @@ async function onHistoryAction(event) {
 }
 
 function onSettingsInput(event) {
+  const draftSettings = sanitizeSettings(readSettingsFromForm(elements.settingsForm));
+
   if (event.target.name === "language") {
-    const draftSettings = sanitizeSettings(readSettingsFromForm(elements.settingsForm));
     updateLanguageAndUi(draftSettings.language, draftSettings);
     renderPlanSections(draftSettings);
     return;
   }
 
-  renderPreviewFromDraft();
+  if (
+    event.target.name === "shoppingIntervalDays" ||
+    event.target.name === "shoppingDay"
+  ) {
+    renderMealPlanTemplate(
+      elements.mealTemplateContainer,
+      draftSettings,
+      state.i18n
+    );
+  }
+
+  renderPreviewFromDraft(draftSettings);
 }
 
 async function loadUserData(user) {
@@ -472,6 +547,9 @@ async function onAuthStateChange(user) {
   if (!user) {
     elements.authPanel.classList.remove("hidden");
     elements.appPanel.classList.add("hidden");
+    elements.menuToggle.classList.add("hidden");
+    closeMenu();
+    state.activeView = "home";
     state.settings = cloneDefaultSettings();
     state.ratings = {};
     state.plan = null;
@@ -483,6 +561,7 @@ async function onAuthStateChange(user) {
 
   elements.authPanel.classList.add("hidden");
   elements.appPanel.classList.remove("hidden");
+  elements.menuToggle.classList.remove("hidden");
   elements.userEmail.textContent = user.email;
 
   try {
@@ -547,22 +626,38 @@ async function handleSignOut() {
   }
 }
 
+function onViewButtonClick(event) {
+  const targetView = event.currentTarget.dataset.viewTarget;
+  if (!targetView) {
+    return;
+  }
+  setActiveView(targetView);
+}
+
 function bindEvents() {
   elements.emailSignIn.addEventListener("click", handleEmailSignIn);
   elements.emailSignUp.addEventListener("click", handleEmailSignUp);
   elements.googleAuth.addEventListener("click", handleGoogleSignIn);
   elements.appleAuth.addEventListener("click", handleAppleSignIn);
   elements.logoutButton.addEventListener("click", handleSignOut);
+  elements.menuToggle.addEventListener("click", toggleMenu);
 
   elements.settingsForm.addEventListener("submit", onGeneratePlan);
   elements.settingsForm.addEventListener("input", onSettingsInput);
   elements.saveSettings.addEventListener("click", onSaveSettings);
+  for (const button of elements.regenerateButtons) {
+    button.addEventListener("click", onRegeneratePlan);
+  }
+  for (const button of elements.viewButtons) {
+    button.addEventListener("click", onViewButtonClick);
+  }
 
   elements.mealPlan.addEventListener("click", onMealPlanAction);
   elements.historyList.addEventListener("click", onHistoryAction);
 }
 
 function bootstrap() {
+  elements.menuToggle.classList.add("hidden");
   updateLanguageAndUi(state.settings.language, state.settings);
   renderPlanSections(state.settings);
   bindEvents();

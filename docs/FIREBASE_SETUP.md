@@ -61,3 +61,5 @@ match /users/{userId} {
 4. Reload and verify data is restored.
 
 If all values in `firebase-config.js` are still placeholders, WTE automatically runs in local demo mode.
+
+In demo mode, Google/Apple buttons are still available through a local demo sign-in prompt, so you can test the full navigation and planner UX before connecting Firebase.
